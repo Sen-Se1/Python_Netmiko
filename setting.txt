@@ -1,0 +1,47 @@
+Router ( cisco_ios )
+
+enable
+conf t
+hostname R1
+ip domain-name lab.local
+crypto key generate rsa modulus 2048
+ip ssh version 2
+username admin privilege 15 secret admin123
+line vty 0 4
+ transport input ssh
+ login local
+ exec-timeout 15 0
+exit
+interface FastEthernet0/0
+ ip address 192.168.56.1 255.255.255.0
+ no shutdown
+exit
+end
+wr
+
+========================================================================
+
+VM ( Ubuntu 24.04 ) 
+sudo nano /etc/netplan/01-network-manager-all.yaml
+
+network:
+  version: 2
+  renderer: NetworkManager
+  ethernets:
+    ens32:
+      addresses:
+        - 192.168.56.10/24
+      nameservers:
+        addresses: [8.8.8.8, 1.1.1.1]
+
+
+
+ping 192.168.56.1
+ssh admin@192.168.56.1
+
+or
+
+ssh -o HostKeyAlgorithms=+ssh-rsa \
+    -o KexAlgorithms=+diffie-hellman-group1-sha1 \
+    -o Ciphers=+aes128-cbc \
+    -l admin 192.168.56.1
